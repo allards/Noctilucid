@@ -3,3 +3,6 @@ Inital release of Noctilucid
 A digital settigns circles (DSC) app for iPhone and iPad. Should work on Andriod as well but untested.
 
 Contains deep sky database, logging facility, DSC and nigth mode.
+
+The deep sky object database is based on the SAC Deep Sky database.
+
