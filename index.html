@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html manifest="noctilucid.manifest">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="format-detection" content="telephone=no">
+
+        <title>
+            Noctilucid
+        </title>
+        
+        <link rel="apple-touch-icon-precomposed" href="images/app_icon.png"/>
+        <link rel="stylesheet" id="theme-css" href="themes/nocturnal.css" />
+        <link rel="stylesheet" id="theme-css" href="custom.css" />
+        <link rel="stylesheet" href="jquery.mobile.structure-1.0.1.min.css" />
+
+        <style>
+            /* App custom styles */
+        </style>
+        <script src="jquery.min.js">
+        </script>
+        <script src="jquery.mobile-1.0.1.min.js">
+        </script>
+    </head>
+    <body>
+        <div data-role="page" id="main" data-theme="a">
+            <div data-role="header">
+                <a href="" id ="back" style="display:none">back</a>
+                <h3 id="header">
+                    DSC
+                </h3>
+            </div>
+            <div data-role="content"  data-header="DSC" id="page-DSC" data-theme="a">
+                <div class="ui-grid-b">
+                    <div class="ui-block-a" style="width:20%;height:44px;">
+                    </div>
+                    <div class="ui-block-b" style="width:40%;height:44px;">
+                        <br /><b>Telescope</b>
+                    </div>
+                    <div class="ui-block-c" id="target" style="width:40%;height:44px;">
+                        <br /><b>Target</b>
+                    </div>
+
+                    <div class="ui-block-a" style="width:20%;height:44px;">
+                        <h2>RA</h2>
+                    </div>
+                    <div class="ui-block-b" style="width:40%;height:44px;">
+                        <h2 id="ra"></h2>
+                    </div>
+                    <div class="ui-block-c" style="width:40%;height:44px;">
+                        <h2 id="ra-obj">-</h2>
+                    </div>
+
+                    <div class="ui-block-a" style="width:20%;height:44px;">
+                        <h2>Dec</h2>
+                    </div>
+                    <div class="ui-block-b" style="width:40%;height:44px;">
+                        <h2 id="dec"></h2>
+                    </div>
+                    <div class="ui-block-c" style="width:40%;height:44px;">
+                        <h2 id="dec-obj">-</h2>
+                    </div>
+
+                    <div class="ui-block-a" style="width:20%;height:44px;">
+                        <h2>Alt</h2>
+                    </div>
+                    <div class="ui-block-b" style="width:40%;height:44px;">
+                        <h2 id="alt"></h2>
+                    </div>
+                    <div class="ui-block-c" style="width:40%;height:44px;">
+                        <h2 id="alt-obj">-</h2>
+                    </div>
+
+                    <div class="ui-block-a" style="width:20%;height:44px;">
+                        <h2>Az</h2>
+                    </div>
+                    <div class="ui-block-b" style="width:40%;height:44px;">
+                        <h2 id="az"></h2>
+                    </div>
+                    <div class="ui-block-c" style="width:40%;height:44px;">
+                        <h2 id="az-obj">-</h2>
+                    </div>
+                </div>
+                <br />
+                <a href="#" data-role="button" data-header="Nearby" id="find-near-by" data-theme="a">Find nearby objects</a>
+                <a href="#" data-role="button" id="show-target-object" objectnumber="" data-theme="a" style="display:none">Show details on target</a>
+            </div>
+            
+            <div data-role="content"  data-header="Objects" id="page-Objects" style="display:none" data-theme="a">
+                <p id="search-help">Select a cataglog to begin</p><br />
+                <ul data-role="listview" id="catalog-list" data-theme="a" class="toggle-style"></ul>
+            </div>
+
+            <div data-role="content" data-header="Objects" id="page-constelations" style="display:none" data-theme="a">
+                <p id="search-help-constelations"></p><br />
+                <ul data-role="listview" id="constelation-list" data-theme="a" class="toggle-style"></ul>
+            </div>
+
+            <div data-role="content"  data-header="Objects" id="page-types" style="display:none" data-theme="a">
+                <p id="search-help-types" style="top:-10px;"></p><br />
+                <ul data-role="listview" id="type-list" data-theme="a" class="toggle-style"></ul>
+            </div>
+
+            <div data-role="content"  data-header="Objects" id="page-results" style="display:none" data-theme="a">
+                <p id="search-help-results"></p><br />
+                <ul data-role="listview" id="result-list" data-theme="a" class="toggle-style"></ul>
+            </div>
+            
+            <div data-role="content" id="page-Log" style="display:none" data-theme="a">
+                <p>
+                    There are no Log entries.
+                </p>
+            </div>
+            
+            <div data-role="content"  data-header="Settings" id="page-Settings" style="display:none" data-theme="a">
+                <h3>Time and place</h3>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width:35%">
+                        Time
+                    </div>
+                    <div class="ui-block-b" id="timestamp" style="width:65%">
+                        unknown
+                    </div>
+
+                    <div class="ui-block-a" style="width:35%">
+                        Latitude
+                    </div>
+                    <div class="ui-block-b" id="lat" style="width:65%">
+                        unknown
+                    </div>
+                    <div class="ui-block-a" style="width:35%">
+                        Longitide
+                    </div>
+                    <div class="ui-block-b" id="lon" style="width:65%">
+                        unknown
+                    </div>
+                </div>
+
+                <a href="#" data-role="button" id="get-gps" data-theme="a">Get new GPS coordinates</a>
+                <br />
+                <h3>Object database</h3>
+				<label for="limiting-magnitude">Limiting magnitude</label>
+				<input type="range" name="limiting-magnitude" id="limiting-magnitude" value="8" min="1" max="20" data-theme="a" />
+
+				<label for="field-nearby">Field in degrees considered as near by</label>
+				<input type="range" name="field-nearby" id="field-nearby" value="10" min="1" max="30" data-theme="a" />
+
+                <div data-role="fieldcontain">
+				    <label for="include-dnbl">Include dark nebula</label>
+                    <select name="slider" id="include-dnbl" data-role="slider">
+	                    <option value="off">On</option>
+	                    <option value="on">Off</option>
+                    </select>
+                </div>
+                <div data-role="fieldcontain">
+				    <label for="include-unknown">Include objects with unknown magnitude</label>
+                    <select name="slider" id="include-unknown" data-role="slider">
+	                    <option value="off">On</option>
+	                    <option value="on">Off</option>
+                    </select>
+                </div>
+                <br />
+                <h3>Interface</h3>
+                <div data-role="fieldcontain">
+				    <label for="dark-vision">Dark vision</label>
+                    <select name="slider" id="dark-vision" data-role="slider">
+	                    <option value="off">On</option>
+	                    <option value="on">Off</option>
+                    </select>
+                </div>
+                <br />
+                <h3>Credits</h3>
+                <div>Noctilucid uses the <a href="http://www.saguaroastro.org" target="_blank">Saguaro Astronomy Club</a> database for deep sky objects.</div>
+
+            </div>
+
+            <div data-role="content" data-header="Nearby" id="page-nearby-listing" style="display:none">
+                <ul data-role="listview" id="object-list" data-theme="a" class="toggle-style">
+                </ul>
+            </div>            
+            
+            <div data-role="content" data-header="Object" id="page-object" style="display:none">
+            <div id="object-holder"></div>
+            <a href="#" data-role="button" id="make-target" data-theme="a">Make target</a>
+            <a href="#" data-role="button" id="log-object" data-theme="a">Log Object</a>
+            </div>
+
+        	<div data-role="footer" data-id="foo1" data-position="fixed">
+	                <div data-role="navbar">
+		                <ul>
+			                <li><a href="#" class="ui-btn-active" id="nav-DSC">DSC</a></li>
+			                <li><a href="#" id="nav-Objects">Objects</a></li>
+			                <li><a href="#" id="nav-Log">Log</a></li>
+			                <li><a href="#" id="nav-Settings">Settings</a></li>
+		                </ul>
+		        </div><!-- /navbar -->
+	        </div><!-- /footer -->
+        </div>
+        
+           
+        <script>
+            //App custom javascript
+        </script>
+        <script src="dsDb.js"></script>
+        <script src="dateFormat.js"></script>
+        <script src="calcLst.js"></script>        
+        <script src="astro-calc.js"></script>
+        <script src="astroapp.js"></script>
+    </body>
+</html>

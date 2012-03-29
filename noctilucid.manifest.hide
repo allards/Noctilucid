@@ -1,0 +1,18 @@
+CACHE MANIFEST
+astroapp.js
+astro-calc.js
+dateFormat.js
+dsDb.js
+index.html
+jquery.min.js
+jquery.mobile-1.0.1.min.css
+jquery.mobile-1.0.1.min.js
+jquery.mobile.structure-1.0.1.min.css
+images/ajax-loader.png
+images/app_icon.png
+images/icons-18-black.png
+images/icons-18-white.png
+images/icons-36-black.png
+images/icons-36-white.png
+
+# version 0.3

@@ -1,0 +1,61 @@
+----------------------------------
+git hub
+----------------------------------
+
+for more, partial commits, mering etc.:
+http://www.apreche.net/github-suggested-workflow/
+
+git checkout -b bugfix <-- start a new branch called bug fix
+git checkout branchname <-- use 'branchname' as branch
+git branch <-- shows branches
+git add -A <-- similar to hg addremove
+git commit
+git push
+
+
+----------------------------------
+TODO
+----------------------------------
+
+- elaborate on object main catelogs
+- elaborate on object classes
+- elaborate on NGC description
+- add object to plan
+- calibrate dsc on object
+- rasc catalogs/listings
+- additional objects:
+    - moon 
+    - planets
+    - stars
+    - comets and asteroids
+- Atlasses
+
+actions for object
+    - align scope to this
+    - make a target
+    - log this
+        - add log page
+    - (if has logs, see logs?)
+    - add to wishlist
+
+----------------------------------
+Background links
+----------------------------------
+    
+math / javascript links:
+http://star-www.st-and.ac.uk/~fv/webnotes/chapter7.htm
+http://mysite.verizon.net/res148h4j/javascript/scriptindex.html
+http://www.atmlist.net/pipermail/atm/2007-December/018954.html
+
+local sky map and sideral time
+http://www.wolframalpha.com/input/?i=toronto+observatory&buttonstates={Row[{%22Current+local+sidereal+time+from+%22%2C+%22Toronto%22}]+-%3E+{1%2C+%22Decimal%22+-%3E+True}}
+
+# creating an icon
+http://sixrevisions.com/web-development/html5-iphone-app/
+https://developers.facebook.com/docs/authentication/server-side/
+57x57
+﻿http://localhost:8080/static/astroapp/app.html
+
+# create interface
+http://www.codiqa.com/builder
+
