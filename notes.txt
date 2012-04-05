@@ -17,6 +17,10 @@ git push
 TODO
 ----------------------------------
 
+logging, show log entries, save log entries
+calibrate on target
+manifest
+
 - elaborate on object main catelogs
 - elaborate on object classes
 - elaborate on NGC description

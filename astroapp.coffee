@@ -124,7 +124,6 @@ $(window).ready () ->
         if event.webkitCompassHeading
             # this only works in iOS5 and up...
             az = event.webkitCompassHeading + window.orientation
-            console.log 'ori:', window.orientation
             accuracy = event.webkitCompassAccuracy
             if accuracy == -1
                 $('#compass-accuracy').text('Compass inaccurate, needs calibration')
@@ -132,7 +131,8 @@ $(window).ready () ->
                 $('#compass-accuracy').text('+/-' + rnd(accuracy,2).toString() + ' degrees')
         else
             az = 360 - event.alpha
-        alt = event.beta
+        if Math.abs(event.beta - alt) > 0.05
+            alt = event.beta
 
         $('#alt').text(rnd(alt,2).toString())
         $('#az').text(rnd((az),2).toString())
@@ -255,6 +255,11 @@ $(window).ready () ->
             azal = az_al(dte, zone, lon, lat, @obj.ra, @obj.dec)
             html += 'Azimuth: ' + rnd(azal[0],2) + '<br />'
             html += 'Altitude: ' + rnd(azal[1],2) + '<br />'
+
+            if @obj.u2k?
+                html += 'Uranometria 2000.0: ' + @obj.u2k + '<br />'
+            if @obj.ti?
+                html += 'Tirion Sky Atlas 2000.0: ' + @obj.ti + '<br />'
             html += '<br />'
             if @obj.sub?
                 if @obj.sub not in [79.9, 99.9]
@@ -275,6 +280,8 @@ $(window).ready () ->
                 html += 'NGC description: ' + @obj.ngcd + '<br />'
             if @obj.notes?
                 html += 'Notes: ' + @obj.notes + '<br />\n'
+            if @obj.logTime?
+                html += 'Logged on: ' + dateFormat(@obj.logTime) + '<br />\n'
             return html
     
     uiFindNearBy = () ->
@@ -406,9 +413,17 @@ $(window).ready () ->
         o = new ReprObj (object)
         $('#object-holder').html(o.detailView())
         $('#make-target').attr('objectnumber',activeObject)
-        
+    
+    # should be taken from storage
+    log = []
+    
     uiLogObject = () ->
-        console.log 'in uiLogObject'
+        object = dsDbJSON[activeObject]
+        object.logTime = new Date()
+        log.push(object)
+        console.log 'in uiLogObject: ', object
+        # should save in storage
+        # will Date survive going in and out of JSON?
         
     uiMakeTarget = () ->
         activeObject = parseInt($(this).attr('objectnumber'))
@@ -450,11 +465,12 @@ $(window).ready () ->
             if filterObject(o)
                 if selectedType == 'ALL' or o.typ == selectedType
                     if selectedConstelation == 'ALL' or o.con == selectedConstelation
-                        if selectedCatalog == 'ALL' or o.obj.indexOf(selectedCatalog) or o.oth.indexOf(selectedCatalog)
+                        if selectedCatalog == 'ALL' or selectedCatalog in o.obj.split(' ') or (o.oth? and selectedCatalog in o.oth.split(' ')) or (o.bchm? and selectedCatalog in o.bchm.split(''))
                             o.number = i
                             results.push(o)
             i++
         if results
+            $('#result-list').empty()
             for r in results
                 o = new ReprObj (r)
                 $('#result-list').append(o.listView())

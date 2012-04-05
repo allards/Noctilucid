@@ -5,7 +5,7 @@
   $(document).bind("mobileinit", ($.mobile.touchOverflowEnabled = true));
 
   $(window).ready(function() {
-    var ReprObj, abr, activeObject, allCats, alt, az, back, backPage, cat, con, dbFindByNumber, dec, distance, dsSortByD, dst, dte, filterObject, findNearBy, getGPS, getOptions, goToPage, handleMotion, handlePositionError, handlePositionFound, html, lat, lon, moveSwitch, options, ra, saveOptions, searchResults, selectedCatalog, selectedConstelation, selectedType, switchValue, type, tzone, uiDarkNebula, uiDarkVision, uiFindNearBy, uiGoBack, uiLimitingMagnitude, uiLogObject, uiMakeTarget, uiNavDSC, uiNavLog, uiNavObjects, uiNavSettings, uiNearByField, uiSelectConstelation, uiSelectType, uiShowObject, uiShowResults, uiUnknownMagnitude, updateRaDec, updateTime, zone;
+    var ReprObj, abr, activeObject, allCats, alt, az, back, backPage, cat, con, dbFindByNumber, dec, distance, dsSortByD, dst, dte, filterObject, findNearBy, getGPS, getOptions, goToPage, handleMotion, handlePositionError, handlePositionFound, html, lat, log, lon, moveSwitch, options, ra, saveOptions, searchResults, selectedCatalog, selectedConstelation, selectedType, switchValue, type, tzone, uiDarkNebula, uiDarkVision, uiFindNearBy, uiGoBack, uiLimitingMagnitude, uiLogObject, uiMakeTarget, uiNavDSC, uiNavLog, uiNavObjects, uiNavSettings, uiNearByField, uiSelectConstelation, uiSelectType, uiShowObject, uiShowResults, uiUnknownMagnitude, updateRaDec, updateTime, zone;
     az = 181.92;
     alt = 29.58;
     ra = 0;
@@ -133,7 +133,6 @@
       var accuracy;
       if (event.webkitCompassHeading) {
         az = event.webkitCompassHeading + window.orientation;
-        console.log('ori:', window.orientation);
         accuracy = event.webkitCompassAccuracy;
         if (accuracy === -1) {
           $('#compass-accuracy').text('Compass inaccurate, needs calibration');
@@ -143,7 +142,7 @@
       } else {
         az = 360 - event.alpha;
       }
-      alt = event.beta;
+      if (Math.abs(event.beta - alt) > 0.05) alt = event.beta;
       $('#alt').text(rnd(alt, 2).toString());
       $('#az').text(rnd(az, 2).toString());
       return updateRaDec();
@@ -285,6 +284,12 @@
         azal = az_al(dte, zone, lon, lat, this.obj.ra, this.obj.dec);
         html += 'Azimuth: ' + rnd(azal[0], 2) + '<br />';
         html += 'Altitude: ' + rnd(azal[1], 2) + '<br />';
+        if (this.obj.u2k != null) {
+          html += 'Uranometria 2000.0: ' + this.obj.u2k + '<br />';
+        }
+        if (this.obj.ti != null) {
+          html += 'Tirion Sky Atlas 2000.0: ' + this.obj.ti + '<br />';
+        }
         html += '<br />';
         if (this.obj.sub != null) {
           if ((_ref2 = this.obj.sub) !== 79.9 && _ref2 !== 99.9) {
@@ -314,6 +319,9 @@
         }
         if (this.obj.notes != null) {
           html += 'Notes: ' + this.obj.notes + '<br />\n';
+        }
+        if (this.obj.logTime != null) {
+          html += 'Logged on: ' + dateFormat(this.obj.logTime) + '<br />\n';
         }
         return html;
       };
@@ -474,8 +482,13 @@
       $('#object-holder').html(o.detailView());
       return $('#make-target').attr('objectnumber', activeObject);
     };
+    log = [];
     uiLogObject = function() {
-      return console.log('in uiLogObject');
+      var object;
+      object = dsDbJSON[activeObject];
+      object.logTime = new Date();
+      log.push(object);
+      return console.log('in uiLogObject: ', object);
     };
     uiMakeTarget = function() {
       var o, object;
@@ -517,7 +530,7 @@
         if (filterObject(o)) {
           if (selectedType === 'ALL' || o.typ === selectedType) {
             if (selectedConstelation === 'ALL' || o.con === selectedConstelation) {
-              if (selectedCatalog === 'ALL' || o.obj.indexOf(selectedCatalog) || o.oth.indexOf(selectedCatalog)) {
+              if (selectedCatalog === 'ALL' || __indexOf.call(o.obj.split(' '), selectedCatalog) >= 0 || ((o.oth != null) && __indexOf.call(o.oth.split(' '), selectedCatalog) >= 0) || ((o.bchm != null) && __indexOf.call(o.bchm.split(''), selectedCatalog) >= 0)) {
                 o.number = i;
                 results.push(o);
               }
@@ -527,6 +540,7 @@
         i++;
       }
       if (results) {
+        $('#result-list').empty();
         for (_j = 0, _len2 = results.length; _j < _len2; _j++) {
           r = results[_j];
           o = new ReprObj(r);
