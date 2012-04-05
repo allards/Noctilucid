@@ -281,7 +281,12 @@ $(window).ready () ->
             if @obj.notes?
                 html += 'Notes: ' + @obj.notes + '<br />\n'
             if @obj.logTime?
-                html += 'Logged on: ' + dateFormat(@obj.logTime) + '<br />\n'
+                # console.log 'obj has logTime', @obj.logTime
+                # timeStamp = new Date(@obj.logTime)
+                # console.log 'timeStamp: ', timeStamp, dateFormat(timeStamp)                
+                html += 'Logged on: ' + @obj.logTime + '<br />\n'
+            else
+                console.log 'obj has no logTime'
             return html
     
     uiFindNearBy = () ->
@@ -340,11 +345,15 @@ $(window).ready () ->
         $('#header').text('Objects')
 
     uiNavLog = () ->
-        $('.ui-content').hide()
-        $('#page-Log').show()
-        $('#back').hide()
-        $('#header').text('Log')      
-                   
+        goToPage('page-Log')
+        if log
+            $('#log-help').text(log.length + ' entries')
+            $('#log-list').empty()
+            for l in log
+                o = new ReprObj (l)
+                $('#log-list').append(o.listView())
+                $('#log-list').listview("refresh")
+                       
     uiNavSettings = () ->
         $('.ui-content').hide()
         $('#page-Settings').show()
@@ -380,8 +389,6 @@ $(window).ready () ->
     uiGoBack = () ->
         console.log backPage
         goToPage(backPage)
-        # if back?
-        #     back()
     
     # global var containing id of page to go back to
     backPage = 'page-DSC'
@@ -389,7 +396,6 @@ $(window).ready () ->
     goToPage = (page) ->
         fromPage = $('[data-role=content]').filter(':visible')
         fromPage.hide()
-        console.log 'in goToPage: ', fromPage, page
         switch page
             when 'page-nearby-listing' then backPage = 'page-DSC'
             when 'page-constelations' then backPage = 'page-Objects'
@@ -414,16 +420,24 @@ $(window).ready () ->
         $('#object-holder').html(o.detailView())
         $('#make-target').attr('objectnumber',activeObject)
     
-    # should be taken from storage
-    log = []
-    
+    # fetching the log
+    # localStorage.removeItem('log')
+    log = localStorage.getItem('log')
+    if log
+        log = JSON.parse(localStorage.getItem('log'))
+        console.log 'log: ', log
+    else
+        log = []
+            
     uiLogObject = () ->
         object = dsDbJSON[activeObject]
-        object.logTime = new Date()
-        log.push(object)
+        # timeStamp = new Date()
+        # object.logTime = timeStamp.valueOf()
+        object.logTime = dateFormat()
+        log.unshift(object)
         console.log 'in uiLogObject: ', object
-        # should save in storage
-        # will Date survive going in and out of JSON?
+        console.log 'stringed object for log: ', JSON.stringify(object)
+        localStorage.setItem('log', JSON.stringify(log))
         
     uiMakeTarget = () ->
         activeObject = parseInt($(this).attr('objectnumber'))
@@ -457,8 +471,6 @@ $(window).ready () ->
     uiShowResults = (event) ->
         goToPage('page-results')
         selectedType = $(this).attr('type')
-        console.log $(this)
-        console.log selectedCatalog, selectedConstelation, selectedType
         results = []
         i = 0
         for o in dsDbJSON

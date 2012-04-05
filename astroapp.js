@@ -321,7 +321,9 @@
           html += 'Notes: ' + this.obj.notes + '<br />\n';
         }
         if (this.obj.logTime != null) {
-          html += 'Logged on: ' + dateFormat(this.obj.logTime) + '<br />\n';
+          html += 'Logged on: ' + this.obj.logTime + '<br />\n';
+        } else {
+          console.log('obj has no logTime');
         }
         return html;
       };
@@ -399,10 +401,20 @@
       return $('#header').text('Objects');
     };
     uiNavLog = function() {
-      $('.ui-content').hide();
-      $('#page-Log').show();
-      $('#back').hide();
-      return $('#header').text('Log');
+      var l, o, _i, _len, _results;
+      goToPage('page-Log');
+      if (log) {
+        $('#log-help').text(log.length + ' entries');
+        $('#log-list').empty();
+        _results = [];
+        for (_i = 0, _len = log.length; _i < _len; _i++) {
+          l = log[_i];
+          o = new ReprObj(l);
+          $('#log-list').append(o.listView());
+          _results.push($('#log-list').listview("refresh"));
+        }
+        return _results;
+      }
     };
     uiNavSettings = function() {
       $('.ui-content').hide();
@@ -446,7 +458,6 @@
       var fromPage, toPage;
       fromPage = $('[data-role=content]').filter(':visible');
       fromPage.hide();
-      console.log('in goToPage: ', fromPage, page);
       switch (page) {
         case 'page-nearby-listing':
           backPage = 'page-DSC';
@@ -482,13 +493,21 @@
       $('#object-holder').html(o.detailView());
       return $('#make-target').attr('objectnumber', activeObject);
     };
-    log = [];
+    log = localStorage.getItem('log');
+    if (log) {
+      log = JSON.parse(localStorage.getItem('log'));
+      console.log('log: ', log);
+    } else {
+      log = [];
+    }
     uiLogObject = function() {
       var object;
       object = dsDbJSON[activeObject];
-      object.logTime = new Date();
-      log.push(object);
-      return console.log('in uiLogObject: ', object);
+      object.logTime = dateFormat();
+      log.unshift(object);
+      console.log('in uiLogObject: ', object);
+      console.log('stringed object for log: ', JSON.stringify(object));
+      return localStorage.setItem('log', JSON.stringify(log));
     };
     uiMakeTarget = function() {
       var o, object;
@@ -521,8 +540,6 @@
       var i, o, r, results, _i, _j, _len, _len2;
       goToPage('page-results');
       selectedType = $(this).attr('type');
-      console.log($(this));
-      console.log(selectedCatalog, selectedConstelation, selectedType);
       results = [];
       i = 0;
       for (_i = 0, _len = dsDbJSON.length; _i < _len; _i++) {
