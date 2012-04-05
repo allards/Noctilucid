@@ -130,39 +130,23 @@
     };
     updateRaDec();
     handleMotion = function(event) {
-      var alt_total, az_total, measurement, new_alt, new_az, pointer, _i, _j, _len, _len2;
-      if (typeof pointer === "undefined" || pointer === null) pointer = 0;
-      if (typeof az_series === "undefined" || az_series === null) az_series = [];
-      if (typeof alt_series === "undefined" || alt_series === null) {
-        alt_series = [];
-      }
+      var accuracy;
       if (event.webkitCompassHeading) {
-        az_series[pointer] = event.webkitCompassHeading + window.orientation;
+        az = event.webkitCompassHeading + window.orientation;
+        console.log('ori:', window.orientation);
+        accuracy = event.webkitCompassAccuracy;
+        if (accuracy === -1) {
+          $('#compass-accuracy').text('Compass inaccurate, needs calibration');
+        } else {
+          $('#compass-accuracy').text('+/-' + rnd(accuracy, 2).toString() + ' degrees');
+        }
       } else {
-        az_series[pointer] = 360 - event.alpha;
+        az = 360 - event.alpha;
       }
-      alt_series[pointer] = event.beta;
-      az_total = 0;
-      for (_i = 0, _len = az_series.length; _i < _len; _i++) {
-        measurement = az_series[_i];
-        az_total += measurement;
-      }
-      new_az = az_total / az_series.length;
-      alt_total = 0;
-      for (_j = 0, _len2 = alt_series.length; _j < _len2; _j++) {
-        measurement = alt_series[_j];
-        alt_total += measurement;
-      }
-      new_alt = alt_total / alt_series.length;
-      pointer++;
-      if (pointer > 20) pointer = 0;
-      if (rnd(new_alt, 1) !== rnd(alt, 1) || rnd(new_az, 1) !== rnd(az, 1)) {
-        alt = new_alt;
-        az = new_az;
-        $('#alt').text(rnd(alt, 2).toString());
-        $('#az').text(rnd(az, 2).toString());
-        return updateRaDec();
-      }
+      alt = event.beta;
+      $('#alt').text(rnd(alt, 2).toString());
+      $('#az').text(rnd(az, 2).toString());
+      return updateRaDec();
     };
     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', handleMotion);

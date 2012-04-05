@@ -120,37 +120,23 @@ $(window).ready () ->
     updateRaDec()
 
     handleMotion = (event) ->
-        pointer ?= 0
-        az_series ?= []
-        alt_series ?= []
-        
+
         if event.webkitCompassHeading
             # this only works in iOS5 and up...
-            az_series[pointer] = event.webkitCompassHeading + window.orientation
+            az = event.webkitCompassHeading + window.orientation
+            console.log 'ori:', window.orientation
+            accuracy = event.webkitCompassAccuracy
+            if accuracy == -1
+                $('#compass-accuracy').text('Compass inaccurate, needs calibration')
+            else
+                $('#compass-accuracy').text('+/-' + rnd(accuracy,2).toString() + ' degrees')
         else
-            az_series[pointer] = 360 - event.alpha
-        alt_series[pointer] = event.beta
-        
-        az_total = 0
-        for measurement in az_series
-            az_total += measurement
-        new_az = az_total / az_series.length
-        
-        alt_total = 0
-        for measurement in alt_series
-            alt_total +=  measurement
-        new_alt = alt_total / alt_series.length
-        
-        pointer++
-        if pointer > 20
-            pointer = 0
+            az = 360 - event.alpha
+        alt = event.beta
 
-        if rnd(new_alt,1) != rnd(alt,1) or rnd(new_az,1) != rnd(az,1)
-            alt = new_alt
-            az = new_az
-            $('#alt').text(rnd(alt,2).toString())
-            $('#az').text(rnd((az),2).toString())
-            updateRaDec()
+        $('#alt').text(rnd(alt,2).toString())
+        $('#az').text(rnd((az),2).toString())
+        updateRaDec()
     
     if window.DeviceOrientationEvent
         window.addEventListener('deviceorientation', handleMotion)  
