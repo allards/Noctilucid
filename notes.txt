@@ -1,3 +1,7 @@
+- figure out saving date time
+- improve az with gyro
+- add bright stars
+
 ----------------------------------
 git hub
 ----------------------------------

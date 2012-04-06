@@ -5,7 +5,7 @@
   $(document).bind("mobileinit", ($.mobile.touchOverflowEnabled = true));
 
   $(window).ready(function() {
-    var ReprObj, abr, activeObject, allCats, alt, az, back, backPage, cat, con, dbFindByNumber, dec, distance, dsSortByD, dst, dte, filterObject, findNearBy, getGPS, getOptions, goToPage, handleMotion, handlePositionError, handlePositionFound, html, lat, log, lon, moveSwitch, options, ra, saveOptions, searchResults, selectedCatalog, selectedConstelation, selectedType, switchValue, type, tzone, uiDarkNebula, uiDarkVision, uiFindNearBy, uiGoBack, uiLimitingMagnitude, uiLogObject, uiMakeTarget, uiNavDSC, uiNavLog, uiNavObjects, uiNavSettings, uiNearByField, uiSelectConstelation, uiSelectType, uiShowObject, uiShowResults, uiUnknownMagnitude, updateRaDec, updateTime, zone;
+    var ReprObj, abr, activeObject, allCats, alt, az, back, backPage, calibrateOffsetAlt, calibrateOffsetAz, cat, con, dbFindByNumber, dec, distance, dsSortByD, dst, dte, filterObject, findNearBy, getGPS, getOptions, goToPage, gyroCompassOffset, handleMotion, handlePositionError, handlePositionFound, html, lat, log, lon, moveSwitch, options, ra, saveOptions, searchResults, selectedCatalog, selectedConstelation, selectedType, switchValue, type, tzone, uiCalibrateOnTarget, uiDarkNebula, uiDarkVision, uiFindNearBy, uiGoBack, uiLimitingMagnitude, uiLogObject, uiMakeTarget, uiNavDSC, uiNavLog, uiNavObjects, uiNavSettings, uiNearByField, uiSelectConstelation, uiSelectType, uiShowObject, uiShowResults, uiUnknownMagnitude, updateRaDec, updateTime, zone;
     az = 181.92;
     alt = 29.58;
     ra = 0;
@@ -129,20 +129,34 @@
       return setTimeout(updateRaDec, 30000);
     };
     updateRaDec();
+    gyroCompassOffset = 0;
     handleMotion = function(event) {
-      var accuracy;
-      if (event.webkitCompassHeading) {
-        az = event.webkitCompassHeading + window.orientation;
+      var accuracy, compassHeading, gyroHeading, heading;
+      gyroHeading = 360 - event.alpha;
+      if (event.webkitCompassHeading && !compassHeading) {
+        compassHeading = event.webkitCompassHeading + window.orientation;
         accuracy = event.webkitCompassAccuracy;
+        gyroCompassOffset = compassHeading - gyroHeading;
         if (accuracy === -1) {
           $('#compass-accuracy').text('Compass inaccurate, needs calibration');
         } else {
           $('#compass-accuracy').text('+/-' + rnd(accuracy, 2).toString() + ' degrees');
         }
       } else {
-        az = 360 - event.alpha;
+        gyroCompassOffset = 0;
       }
-      if (Math.abs(event.beta - alt) > 0.05) alt = event.beta;
+      heading = gyroHeading + gyroCompassOffset + calibrateOffsetAz;
+      if (heading > 360) az = heading - 360;
+      if (heading < 0) {
+        az = 360 - heading;
+      } else {
+        az = heading;
+      }
+      if (Math.abs(event.beta - alt) > 0.05) {
+        alt = event.beta + calibrateOffsetAlt;
+        if (alt > 90) alt = 90 - alt;
+        if (alt < -90) alt = 90 - (alt + 90);
+      }
       $('#alt').text(rnd(alt, 2).toString());
       $('#az').text(rnd(az, 2).toString());
       return updateRaDec();
@@ -211,6 +225,8 @@
       results.sort(dsSortByD);
       return results;
     };
+    calibrateOffsetAlt = 0;
+    calibrateOffsetAz = 0;
     ReprObj = (function() {
 
       function ReprObj(obj) {
@@ -227,6 +243,22 @@
         this.type = types[this.obj.typ];
       }
 
+      ReprObj.prototype.calibrateOnTarget = function() {
+        var azal;
+        azal = az_al(dte, zone, lon, lat, this.obj.ra, this.obj.dec);
+        calibrateOffsetAlt = azal[1] - alt;
+        calibrateOffsetAz = azal[0] - az;
+        alt = alt + calibrateOffsetAlt;
+        if (alt > 90) alt = 90 - alt;
+        if (alt < -90) alt = 90 - (alt + 90);
+        $('#alt').text(rnd(alt, 2).toString());
+        az = az + gyroCompassOffset + calibrateOffsetAz;
+        if (az > 360) az = az - 360;
+        if (az < 0) az = 360 - az;
+        $('#az').text(rnd(az, 2).toString());
+        return updateRaDec();
+      };
+
       ReprObj.prototype.setAsTarget = function() {
         var azal, decString;
         $('#ra-obj').html(DMST(this.obj.ra));
@@ -239,7 +271,9 @@
         $('#target').html('<br /><b>' + this.obj.obj + '</b>');
         $('#show-target-object').attr('objectnumber', this.obj.number);
         console.log($('#show-target-object .ui-btn-text'));
-        return $('#show-target-object').show();
+        $('#show-target-object').show();
+        $('#calibrate-on-target').attr('objectnumber', this.obj.number);
+        return $('#calibrate-on-target').show();
       };
 
       ReprObj.prototype.listView = function() {
@@ -319,11 +353,6 @@
         }
         if (this.obj.notes != null) {
           html += 'Notes: ' + this.obj.notes + '<br />\n';
-        }
-        if (this.obj.logTime != null) {
-          html += 'Logged on: ' + this.obj.logTime + '<br />\n';
-        } else {
-          console.log('obj has no logTime');
         }
         return html;
       };
@@ -409,6 +438,7 @@
         _results = [];
         for (_i = 0, _len = log.length; _i < _len; _i++) {
           l = log[_i];
+          console.log(l);
           o = new ReprObj(l);
           $('#log-list').append(o.listView());
           _results.push($('#log-list').listview("refresh"));
@@ -568,6 +598,12 @@
       $('#search-help-results').text(allCats[selectedCatalog] + ' > ' + constelations[selectedConstelation] + ' > ' + types[selectedType] + ' > Found: ' + results.length.toString());
       return searchResults = true;
     };
+    uiCalibrateOnTarget = function() {
+      var o, object;
+      object = dsDbJSON[activeObject];
+      o = new ReprObj(object);
+      return o.calibrateOnTarget();
+    };
     $('#nav-DSC').bind('click', uiNavDSC);
     $('#nav-Objects').bind('click', uiNavObjects);
     $('#nav-Log').bind('click', uiNavLog);
@@ -585,7 +621,8 @@
     $('body').delegate('a.typeLink', 'click', uiShowResults);
     $('#log-object').bind('click', uiLogObject);
     $('#make-target').bind('click', uiMakeTarget);
-    return $('#show-target-object').bind('click', uiShowObject);
+    $('#show-target-object').bind('click', uiShowObject);
+    return $('#calibrate-on-target').bind('click', uiCalibrateOnTarget);
   });
 
   additionalCatalogs = {

@@ -119,21 +119,40 @@ $(window).ready () ->
     
     updateRaDec()
 
-    handleMotion = (event) ->
+    gyroCompassOffset = 0
 
-        if event.webkitCompassHeading
+    handleMotion = (event) ->
+        gyroHeading = 360 - event.alpha       
+
+        if event.webkitCompassHeading and not compassHeading
             # this only works in iOS5 and up...
-            az = event.webkitCompassHeading + window.orientation
+            compassHeading = event.webkitCompassHeading + window.orientation
             accuracy = event.webkitCompassAccuracy
+            gyroCompassOffset =  compassHeading - gyroHeading
             if accuracy == -1
                 $('#compass-accuracy').text('Compass inaccurate, needs calibration')
             else
                 $('#compass-accuracy').text('+/-' + rnd(accuracy,2).toString() + ' degrees')
         else
-            az = 360 - event.alpha
-        if Math.abs(event.beta - alt) > 0.05
-            alt = event.beta
+            gyroCompassOffset = 0
+        
+        heading = gyroHeading + gyroCompassOffset + calibrateOffsetAz
+        
+        if heading > 360
+            az = heading - 360
+        if heading < 0
+            az = 360 - heading
+        else
+            az = heading
 
+
+        if Math.abs(event.beta - alt) > 0.05
+            alt = event.beta + calibrateOffsetAlt
+            if alt > 90
+                alt = 90 - alt
+            if alt < -90
+                alt = 90 - (alt + 90)
+                
         $('#alt').text(rnd(alt,2).toString())
         $('#az').text(rnd((az),2).toString())
         updateRaDec()
@@ -196,7 +215,10 @@ $(window).ready () ->
             i++
         results.sort(dsSortByD)
         return results
-        
+
+    calibrateOffsetAlt = 0
+    calibrateOffsetAz = 0
+
     class ReprObj
         constructor: (obj) ->
             @obj = obj
@@ -211,6 +233,23 @@ $(window).ready () ->
                 @mag = 'dark nebula'
             @constelation = constelations[obj.con]
             @type = types[@obj.typ]
+        calibrateOnTarget: () ->
+            azal = az_al(dte, zone, lon, lat, @obj.ra, @obj.dec)
+            calibrateOffsetAlt = azal[1] - alt
+            calibrateOffsetAz = azal[0] - az
+            alt = alt + calibrateOffsetAlt
+            if alt > 90
+                alt = 90 - alt
+            if alt < -90
+                alt = 90 - (alt + 90)
+            $('#alt').text(rnd(alt,2).toString())
+            az = az + gyroCompassOffset + calibrateOffsetAz
+            if az > 360
+                az = az - 360
+            if az < 0
+                az = 360 - az
+            $('#az').text(rnd((az),2).toString())
+            updateRaDec()
         setAsTarget: () ->
             $('#ra-obj').html(DMST(@obj.ra))
             decString = DMST(@obj.dec)
@@ -223,6 +262,8 @@ $(window).ready () ->
             $('#show-target-object').attr('objectnumber', @obj.number)
             console.log $('#show-target-object .ui-btn-text')
             $('#show-target-object').show()
+            $('#calibrate-on-target').attr('objectnumber', @obj.number)
+            $('#calibrate-on-target').show()
         listView: () ->
             if options.darkvision
                 html = '<li data-theme="a" data-icon="false"><a href="" class="linkToObject" objectNumber="'+ @obj.number + '"><p><strong>' + @name + '</p></strong><p>' + @type + ' in ' + @constelation + ' (' + @mag + ')</p></a></li>'
@@ -280,13 +321,20 @@ $(window).ready () ->
                 html += 'NGC description: ' + @obj.ngcd + '<br />'
             if @obj.notes?
                 html += 'Notes: ' + @obj.notes + '<br />\n'
-            if @obj.logTime?
+            # logStamps = []
+            # for l in log
+            #     if l.obj == @obj.obj
+            #         logStamps.push(l.logTime)
+            #         console.log l.obj, @obj.obj, l.logTime, logStamps
+            # if logStamps
+            #     @obj.logTime = logStamps.join(', ')
+            # if @obj.logTime?
                 # console.log 'obj has logTime', @obj.logTime
                 # timeStamp = new Date(@obj.logTime)
                 # console.log 'timeStamp: ', timeStamp, dateFormat(timeStamp)                
-                html += 'Logged on: ' + @obj.logTime + '<br />\n'
-            else
-                console.log 'obj has no logTime'
+            #     html += 'Logged on: ' + @obj.logTime + '<br />\n'
+            # else
+            #     console.log 'obj has no logTime'
             return html
     
     uiFindNearBy = () ->
@@ -350,6 +398,7 @@ $(window).ready () ->
             $('#log-help').text(log.length + ' entries')
             $('#log-list').empty()
             for l in log
+                console.log l
                 o = new ReprObj (l)
                 $('#log-list').append(o.listView())
                 $('#log-list').listview("refresh")
@@ -489,6 +538,12 @@ $(window).ready () ->
                 $('#result-list').listview("refresh")
         $('#search-help-results').text(allCats[selectedCatalog] + ' > ' + constelations[selectedConstelation] + ' > ' + types[selectedType] + ' > Found: ' + results.length.toString() )
         searchResults = true
+        
+    uiCalibrateOnTarget = () ->
+        object = dsDbJSON[activeObject]
+        o = new ReprObj (object)
+        o.calibrateOnTarget()
+
          
     $('#nav-DSC').bind('click', uiNavDSC)
     $('#nav-Objects').bind('click', uiNavObjects)
@@ -511,7 +566,7 @@ $(window).ready () ->
     $('#log-object').bind('click', uiLogObject)
     $('#make-target').bind('click', uiMakeTarget)
     $('#show-target-object').bind('click', uiShowObject)
-
+    $('#calibrate-on-target').bind('click', uiCalibrateOnTarget)
 
 additionalCatalogs = {
     "B":"Best of the NGC from SAC",
