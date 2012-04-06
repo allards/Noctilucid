@@ -146,6 +146,7 @@
         gyroCompassOffset = 0;
       }
       heading = gyroHeading + gyroCompassOffset + calibrateOffsetAz;
+      console.log(heading);
       if (heading > 360) az = heading - 360;
       if (heading < 0) {
         az = 360 - heading;
