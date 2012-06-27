@@ -120,6 +120,7 @@ $(window).ready () ->
     updateRaDec()
 
     gyroCompassOffset = 0
+    gyroHeading = 0
 
     handleMotion = (event) ->
         gyroHeading = 360 - event.alpha       
@@ -135,15 +136,13 @@ $(window).ready () ->
                 $('#compass-accuracy').text('+/-' + rnd(accuracy,2).toString() + ' degrees')
         else
             gyroCompassOffset = 0
-        
-        heading = gyroHeading + gyroCompassOffset + calibrateOffsetAz
-        console.log heading
-        if heading > 360
-            az = heading - 360
-        if heading < 0
-            az = 360 - heading
-        else
-            az = heading
+            
+        az = gyroHeading + gyroCompassOffset + calibrateOffsetAz
+
+        if az > 360
+            az = az - 360
+        if az < 0
+            az = 360 - az
 
 
         if Math.abs(event.beta - alt) > 0.05
@@ -249,6 +248,7 @@ $(window).ready () ->
             if az < 0
                 az = 360 - az
             $('#az').text(rnd((az),2).toString())
+            console.log gyroHeading, gyroCompassOffset, calibrateOffsetAz
             updateRaDec()
         setAsTarget: () ->
             $('#ra-obj').html(DMST(@obj.ra))

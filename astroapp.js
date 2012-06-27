@@ -5,7 +5,7 @@
   $(document).bind("mobileinit", ($.mobile.touchOverflowEnabled = true));
 
   $(window).ready(function() {
-    var ReprObj, abr, activeObject, allCats, alt, az, back, backPage, calibrateOffsetAlt, calibrateOffsetAz, cat, con, dbFindByNumber, dec, distance, dsSortByD, dst, dte, filterObject, findNearBy, getGPS, getOptions, goToPage, gyroCompassOffset, handleMotion, handlePositionError, handlePositionFound, html, lat, log, lon, moveSwitch, options, ra, saveOptions, searchResults, selectedCatalog, selectedConstelation, selectedType, switchValue, type, tzone, uiCalibrateOnTarget, uiDarkNebula, uiDarkVision, uiFindNearBy, uiGoBack, uiLimitingMagnitude, uiLogObject, uiMakeTarget, uiNavDSC, uiNavLog, uiNavObjects, uiNavSettings, uiNearByField, uiSelectConstelation, uiSelectType, uiShowObject, uiShowResults, uiUnknownMagnitude, updateRaDec, updateTime, zone;
+    var ReprObj, abr, activeObject, allCats, alt, az, back, backPage, calibrateOffsetAlt, calibrateOffsetAz, cat, con, dbFindByNumber, dec, distance, dsSortByD, dst, dte, filterObject, findNearBy, getGPS, getOptions, goToPage, gyroCompassOffset, gyroHeading, handleMotion, handlePositionError, handlePositionFound, html, lat, log, lon, moveSwitch, options, ra, saveOptions, searchResults, selectedCatalog, selectedConstelation, selectedType, switchValue, type, tzone, uiCalibrateOnTarget, uiDarkNebula, uiDarkVision, uiFindNearBy, uiGoBack, uiLimitingMagnitude, uiLogObject, uiMakeTarget, uiNavDSC, uiNavLog, uiNavObjects, uiNavSettings, uiNearByField, uiSelectConstelation, uiSelectType, uiShowObject, uiShowResults, uiUnknownMagnitude, updateRaDec, updateTime, zone;
     az = 181.92;
     alt = 29.58;
     ra = 0;
@@ -130,8 +130,9 @@
     };
     updateRaDec();
     gyroCompassOffset = 0;
+    gyroHeading = 0;
     handleMotion = function(event) {
-      var accuracy, compassHeading, gyroHeading, heading;
+      var accuracy, compassHeading;
       gyroHeading = 360 - event.alpha;
       if (event.webkitCompassHeading && !compassHeading) {
         compassHeading = event.webkitCompassHeading + window.orientation;
@@ -145,14 +146,9 @@
       } else {
         gyroCompassOffset = 0;
       }
-      heading = gyroHeading + gyroCompassOffset + calibrateOffsetAz;
-      console.log(heading);
-      if (heading > 360) az = heading - 360;
-      if (heading < 0) {
-        az = 360 - heading;
-      } else {
-        az = heading;
-      }
+      az = gyroHeading + gyroCompassOffset + calibrateOffsetAz;
+      if (az > 360) az = az - 360;
+      if (az < 0) az = 360 - az;
       if (Math.abs(event.beta - alt) > 0.05) {
         alt = event.beta + calibrateOffsetAlt;
         if (alt > 90) alt = 90 - alt;
@@ -257,6 +253,7 @@
         if (az > 360) az = az - 360;
         if (az < 0) az = 360 - az;
         $('#az').text(rnd(az, 2).toString());
+        console.log(gyroHeading, gyroCompassOffset, calibrateOffsetAz);
         return updateRaDec();
       };
 
